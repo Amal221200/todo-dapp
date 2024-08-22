@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { CONTRACT_ADDRESS, TodoABI } from "../blockchain/constants";
 import { useCallback } from "react";
@@ -11,30 +12,49 @@ export default function () {
     const { writeContractAsync } = useWriteContract()
 
     const updateTodo = useCallback(async (id: number) => {
-        const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "completedTodo", args: [id] })
-        await toast.promise(waitForTransactionReceipt(config, {
-            hash,
-            pollingInterval: 1000,
-        }), { success: "Todo Updated", loading: "Running Your Transaction", error: "Something went wrong" })
-        await refetch()
+        try {
+
+            const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "completedTodo", args: [id] })
+            await toast.promise(waitForTransactionReceipt(config, {
+                hash,
+                pollingInterval: 1000,
+            }), { success: "Todo Updated", loading: "Running Your Transaction", error: "Something went wrong" })
+            await refetch()
+        } catch (error: any) {
+            if (error?.message?.includes('User rejected')) {
+                toast.error("You cancelled the transaction")
+            }
+        }
     }, [writeContractAsync, refetch])
-    
+
     const deleteTodo = useCallback(async (id: number) => {
-        const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "deleteTodo", args: [id] })
-        await toast.promise(waitForTransactionReceipt(config, {
-            hash,
-            pollingInterval: 1000,
-        }), { success: "Todo Deleted", loading: "Running Your Transaction", error: "Something went wrong" })
-        await refetch()
+        try {
+            const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "deleteTodo", args: [id] })
+            await toast.promise(waitForTransactionReceipt(config, {
+                hash,
+                pollingInterval: 1000,
+            }), { success: "Todo Deleted", loading: "Running Your Transaction", error: "Something went wrong" })
+            await refetch()
+        } catch (error: any) {
+            if (error?.message?.includes('User rejected')) {
+                toast.error("You cancelled the transaction")
+            }
+        }
     }, [writeContractAsync, refetch])
 
     const createTodo = useCallback(async (task: string) => {
-        const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "addTodo", args: [task] })
-        await toast.promise(waitForTransactionReceipt(config, {
-            hash,
-            pollingInterval: 1000,
-        }), { success: "Todo Created", loading: "Running Your Transaction", error: "Something went wrong" })
-        await refetch()
+        try {
+            const hash = await writeContractAsync({ abi: TodoABI, address: CONTRACT_ADDRESS, functionName: "addTodo", args: [task] })
+            await toast.promise(waitForTransactionReceipt(config, {
+                hash,
+                pollingInterval: 1000,
+            }), { success: "Todo Created", loading: "Running Your Transaction", error: "Something went wrong" })
+            await refetch()
+        } catch (error: any) {
+            if (error?.message?.includes('User rejected')) {
+                toast.error("You cancelled the transaction")
+            }
+        }
     }, [writeContractAsync, refetch])
 
 
